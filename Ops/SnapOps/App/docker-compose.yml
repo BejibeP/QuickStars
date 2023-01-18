@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  myapp:
+    image: exemple/myapp
+    container_name: myapp
+    networks:
+      - proxy
+    # Dynamic configuration
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.whoami.entrypoints=websecure
+      - traefik.http.routers.whoami.rule=Host(`myapp.mydomain.com`)
+      - com.centurylinklabs.watchtower.enable=true
+    restart: always
+
+networks:
+  proxy:
+    name: "proxy"
+    external: true

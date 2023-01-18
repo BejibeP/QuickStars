@@ -1,0 +1,96 @@
+version: "3.9"
+name: "dosatsukuma"
+
+services:
+
+  # chk img #1.22.1
+  # chk ports # HOST:CONTAINER
+  kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: kuma
+    ports:
+      - 3002:3001
+    networks:
+      - monitor
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - kuma-data:/app/data
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  # chk img
+  # chk ports # HOST:CONTAINER
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    ports:
+      - 3000:3000
+    networks:
+      - monitor
+    volumes:
+    - grafana-data:/var/lib/grafana
+    - grafana-etc:/etc/grafana
+    - grafana-home:/usr/share/grafana
+    environment:
+      - GF_LOG_LEVEL=info
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  # chk img
+  # chk ports # HOST:CONTAINER
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - 3100:3100
+    networks:
+      - monitor
+    volumes:
+      - loki-data:/etc/loki
+      #- ./loki-config.yml:/etc/lok/loki-config.yml
+    #command: -config.file=loki-config.yml
+    #environment:
+    #  - GF_LOG_LEVEL=info
+    #  - GF_INSTALL_PLUGINS=grafana-clock-panel
+    #depends_on:
+    #  - loki
+    restart: unless-stopped
+
+#  promtail:
+#    image: grafana/promtail:latest #chk img
+#    container_name: promtail
+#    #ports:
+#    #  - 1514:1514 # only needed if using syslogs
+#    networks:
+#      - monitor
+#    volumes:
+#    #- /var/log:/var/log
+#    - promtail-db:/etc/promtail
+#    #environment:
+#    #  - GF_LOG_LEVEL=info
+#    #  - GF_INSTALL_PLUGINS=grafana-clock-panel
+#    #depends_on:
+#    #  - promtail
+#    restart: unless-stopped
+#    command: -config.file=/etc/promtail/promtail-config.yml
+
+volumes:
+  grafana-data:
+    name: grafana-data
+  grafana-etc:
+    name: grafana-etc
+  grafana-home:
+    name: grafana-home
+  loki-data:
+    name: loki-data
+  promtail-data:
+    name: promtail-data
+  kuma-data:
+    name: kuma-data
+
+networks:
+  monitor:
+    name: monitor

@@ -1,0 +1,88 @@
+###############################################################
+#                Traefik Static Configuration                 #
+###############################################################
+[global]
+  checkNewVersion = true
+  sendAnonymousUsage = false
+
+[api]
+  insecure = false
+  dashboard = true
+  debug = true
+
+[providers]
+  [providers.file]    
+    directory = "/etc/traefik"
+    filename = "dynamic.toml"
+    watch = true
+
+  [providers.docker]
+    endpoint = "unix:///var/run/docker.sock"
+    exposedByDefault = false
+    watch = true
+    network = "proxy"
+
+[entryPoints]
+  [entryPoints.web]
+    address=":80"
+    [entryPoints.web.http.redirections]
+      [entryPoints.web.http.redirections.entryPoint]
+        to = "websecure"
+        scheme = "https"
+        permanent = true
+
+  [entryPoints.websecure]
+    address=":443"
+    [entryPoints.websecure.http.tls]
+      options = "intermediate@file"
+      certResolver = "letsresolve"
+
+  [entryPoints.metrics]
+    address = ":451"
+
+[certificatesResolvers]
+  [certificatesResolvers.letsstage]
+    [certificatesResolvers.letsstage.acme]
+      caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+      email = "noreply@mydomain.com"
+      storage = "/etc/traefik/acme-staging.json"
+      keyType = "RSA4096"
+      [certificatesResolvers.letsstage.acme.httpChallenge]
+        entryPoint = "web"
+
+  [certificatesResolvers.letsresolve]
+    [certificatesResolvers.letsresolve.acme]
+      caServer = "https://acme-v02.api.letsencrypt.org/directory"
+      email = "noreply@mydomain.com"
+      storage = "/etc/traefik/acme.json"
+      keyType = "RSA4096"
+      [certificatesResolvers.letsresolve.acme.httpChallenge]
+        entryPoint = "web"
+
+[log]
+  level = "INFO"
+
+[accesslog]
+  bufferingSize = 10
+  [accessLog.filters]
+    retryAttempts = true
+    minDuration = "10ms"
+  [accessLog.fields]
+    defaultMode = "keep"
+    [accessLog.fields.names]
+      "ClientUsername" = "redact"
+      "ClientAddr" = "redact"
+      "ClientHost" = "redact"
+    [accessLog.fields.headers]
+      defaultMode = "keep"
+      [accessLog.fields.headers.names]
+        "User-Agent" = "redact"
+        "Authorization" = "drop"
+        "Content-Type" = "keep"
+
+[metrics]
+  [metrics.prometheus]
+    entryPoint = "metrics"
+    addEntryPointsLabels = true
+    addServicesLabels = true
+    buckets = [0.1,0.3,1.2,5.0]

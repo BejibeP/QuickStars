@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  watchtower:
+    image: containrrr/watchtower:1.5.3
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /apps/watchtower/data/symconfig:/config.json
+    environment: 
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_ROLLING_RESTART=true
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_POLL_INTERVAL=1200
+      - WATCHTOWER_TIMEOUT=30s
+      - WATCHTOWER_DEBUG=false
+      - WATCHTOWER_LOG_LEVEL=info
+    restart: unless-stopped

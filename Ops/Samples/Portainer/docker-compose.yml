@@ -1,0 +1,24 @@
+version: "3.9"
+name: "portainer"
+
+volumes:
+  portdata:
+    name: portdata
+
+networks:
+  portnet:
+    name: portnet
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    ports:
+      - 8000:8000
+      - 9443:9443
+    networks:
+      - portnet
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # bind to docker socket
+      - portdata:/data
+    restart: unless-stopped

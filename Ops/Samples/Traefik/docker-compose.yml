@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  traefik:
+    image: traefik:v2.9.9
+    container_name: traefik
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - proxy
+    volumes:
+      # Traefik configuration (Static, Dynamic, Certs)
+      - /apps/traefik/data:/etc/traefik
+      # Docker socket for provider
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # Dynamic configuration
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.api.entrypoints=websecure
+      - traefik.http.routers.api.service=api@internal
+      - traefik.http.routers.api.rule=Host(`traefik.exemple.fr`)
+      - traefik.http.routers.api.middlewares=webauth@file
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/loki/api/v1/push"
+        loki-external-labels: "container_name={{.Name}},container_id={{.FullID}}"
+        loki-batch-size: "10"
+        loki-batch-wait: "5s"
+    restart: always
+
+networks:
+  proxy:
+    name: "proxy"
+    external: true
