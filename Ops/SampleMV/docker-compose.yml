@@ -1,0 +1,65 @@
+version: "3.9"
+#name: "mvapp"
+
+services:
+  #mv-app:
+  #  image: bejibe/ngapp:latest
+  #  container_name: mv-app
+  #  ports:
+  #    - 6400:6400
+  #  networks:
+  #    - mvnet
+  #  depends_on:
+  #    - mv-api
+  #  restart: unless-stopped
+
+  #mv-api:
+  #  image: bejibe/netapi:latest
+  #  container_name: mv-api
+  #  ports:
+  #    - 7000:6512
+  #  networks:
+  #    - mvnet
+  #  environment:
+  #    - ASPNETCORE_ENVIRONMENT=Development
+  #    - DatabaseConnections__Default__Host=mv-sql
+  #    - DatabaseConnections__Default__Port=1433
+  #    - DatabaseConnections__Default__User=SA
+  #    - DatabaseConnections__Default__Password=A&VeryComplex123Password
+  #    - App__Security__SSLRequired=true
+  #  depends_on:
+  #    - mv-sql
+  #  #command: ["dotnet", "ef", "database", "update"]  # Apply migrations
+  #  #restart: unless-stopped################
+
+  mv-sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mv-sql
+    ports:
+      - 1467:1433
+    networks:
+      - mvnet
+    volumes:
+      - mv-data:/var/opt/mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=A&VeryComplex123Password
+      - MSSQL_PID=Express
+    restart: unless-stopped
+
+  #py-api:
+  #  image: bejibe/pyapi:latest
+  #  container_name: mv-api
+  #  ports:
+  #    - 7210:7210
+  #  networks:
+  #    - mvnet
+  #  restart: unless-stopped
+
+volumes:
+  mv-data:
+    name: mv-data
+
+networks:
+  mvnet:
+    name: mvnet
