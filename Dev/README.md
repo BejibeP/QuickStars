@@ -1,3 +1,3 @@
 # Dev
 
-Repertoire de templates d'applications
+Repertoire de templates et démos d'application
